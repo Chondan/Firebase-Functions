@@ -37,3 +37,52 @@ exports.addRequest = functions.https.onCall((data, context) => {
 		upvotes: 0,
 	});
 });
+
+// upvote callable function
+exports.upvote = functions.https.onCall((data, context) => {
+	// check auth state
+	if (!context.auth) {
+		throw new functions.https.HttpsError(
+			'unauthenticated',
+			'only authenticated users can vote'
+		);
+	}
+	// get refs for user doc & request doc
+	const user = admin.firestore().collection('users').doc(context.auth.uid);
+	const request = admin.firestore().collection('requests').doc(data.id);
+
+	return user.get().then(doc => {
+		// check user hasn't already upvoted the request
+		if (doc.data().upvotedOn.includes(data.id)) {
+			throw new functions.https.HttpsError(
+				'failed-precondition',
+				'You can only upvote something once'
+			);
+		}
+		// update user array
+		return user.update({
+			upvotedOn: [ ...doc.data().upvotedOn, data.id ]
+		});
+	})
+	.then(() => {
+		// update votes on the request
+		return request.update({
+			upvotes: admin.firestore.FieldValue.increment(1)
+		});
+	});
+});
+
+// firestore trigger for tracking activity
+exports.logActivities = functions.firestore.document('/{collection}/{id}')
+  .onCreate((snap, context) => {
+  	console.log(snap.data());
+  	const { collection, id } = context.params;
+
+  	const activities = admin.firestore().collection('activities');
+  	if (collection === 'requests') {
+  		return activities.add({ text: 'a new tutorial request was added' });
+  	} else if (collection === 'users') {
+  		return activities.add({ text: 'a new user signed up' });
+  	}
+  	return null;
+  });

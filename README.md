@@ -4,10 +4,13 @@
 - admin sdk
 	- if we want to interact with firestore database inside cloud functions, we need to require an admin sdk.
 	- admin sdk allows us basically to interact with firestore.
+- hosting -> `firebase hosting` (command)
+	- firebase uploaded the whole things in our local directory so we need to check any configurations in our local directory to match with any configuration we have changed on the 'firebase console' while developing.
 
 ## Types of Cloud Functions
 - Background Triggers -> we're not sending a response to a client but still need to return a value or promise.
 	- database events
+		- e.g. trigger when there is a new document.
 	- auth events
 		- e.g. trigger when a new user signed up.
 	- storage events
@@ -44,3 +47,29 @@ requestModal.addEventListener('click', (e) => {
 const modal = document.querySelector('.modal');
 modal.classList.toggle('active');
 ```
+- Vue Instance
+```JavaScript
+const app = new Vue({
+	el: '#app',
+	data: {
+		requests: []
+	},
+	mounted() {
+		const ref = firebase.firestore().collection('requests');
+
+		ref.onSnapshot(snapshot => {
+			let requests = [];
+			snapshot.forEach(doc => {
+				requests.push({ ...doc.data(), id: doc.id });
+			});
+
+			let html = '';
+			requests.forEach(request => {
+				html += `<li>${request.text}</li>`;
+			});
+			this.requests = requests;
+		});
+	}
+});
+```
+- Google Cloud Functions - warning Avoid nesting promises promise/no-nesting: https://stackoverflow.com/questions/49844854/google-cloud-functions-warning-avoid-nesting-promises-promise-no-nesting
