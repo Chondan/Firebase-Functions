@@ -5,7 +5,7 @@
 	- if we want to interact with firestore database inside cloud functions, we need to require an admin sdk.
 	- admin sdk allows us basically to interact with firestore.
 - hosting -> `firebase hosting` (command)
-	- firebase uploaded the whole things in our local directory so we need to check any configurations in our local directory to match with any configuration we have changed on the 'firebase console' while developing.
+	- firebase uploaded the whole things in our local directory so we need to check any configurations in our local directory to match with any configurations we have changed on the 'firebase console' while developing.
 
 ## Types of Cloud Functions
 - Background Triggers -> we're not sending a response to a client but still need to return a value or promise.
